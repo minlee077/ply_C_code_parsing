@@ -1,4 +1,4 @@
-# List of token names.   This is always required
+#List of token names.   This is always required
 
 reserved = (
     #keywords    
@@ -142,16 +142,9 @@ def p_external_declaration_function(p):
     'external_declaration : function_definition'
     p[0] = [p[1]]
 
-def p_funciton_definition(p):
-    'function_definition : id_delaration LPAREN arguments RPAREN compound_statement'
+def p_function_definition(p):
+    'function_definition : id_delaration LPAREN expression RPAREN compound_statement'
     p[0] = [p[1]]
-
-def p_arguments(p):
-    'arguments : '
-
-def p_parameter_braces(p):
-    'parameter_brace : LBRACE expression RBRACE'
-    p[0] = p[2]
 
 def p_exteranal_declaration_declaration(p):
     'external_declaration : declaration'
@@ -188,6 +181,7 @@ def p_statement(p):
                  | jump_statement
                  | slection_statement
                  '''
+    p[0] = p[1]
 
 def p_compound_statement(p):
     'compound_statement : LBRACE block_item_list RBRACE'
@@ -214,7 +208,8 @@ def p_expression(p):
         p[0] = p[1] = p[3]
 
 def p_unary_expression_ppmm(p):
-    'unary_expression : PP unary_expression'
+    'expression : PP unary_expression'
+    p[0]=p[2]
 
 def p_expression_plus(p):
     'expression : expression PLUS term'
