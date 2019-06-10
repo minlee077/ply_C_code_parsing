@@ -1,0 +1,9 @@
+#include <ads.h>
+#include <ads.h>
+#include <ads.h>
+#include <ads.h>
+
+int a;
+int b;
+
+int c;

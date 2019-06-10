@@ -128,43 +128,33 @@ decvar_cnt=0
 
 def p_translation_unit(p):
     'translation_unit : external_declaration'
-    p[0]=p[1]
-    print('ccc')
 
 def p_translation_unit_append(p):
     'translation_unit : translation_unit external_declaration'
-    p[1].extend(p[2])
-    p[0]=p[1]
 
 # type of exteral declarations : header, function, external declaratian(variables), just semi colon
 
 def p_exteranal_declaration_header(p):
     'external_declaration : include_header'
-    p[0] = [p[1]]
 
 def p_empty(p):
     'empty : '
-    p[0] = None
 
 def p_include_header(p):
     'include_header : INCLUDE HEADER'
     global hd_cnt
     hd_cnt+=1
-    p[0]=[p[2]]
 
 def p_external_declaration_function(p): 
     'external_declaration : function_definition'
-    p[0] = [p[1]]
 
 def p_function_definition(p):
     'function_definition : id_declaration arguments compound_statement'
-    p[0] = [p[1]]
     global fdef_cnt
     fdef_cnt +=1
 
 def p_arguments(p):
     'arguments : LPAREN args RPAREN'
-    p[0] = p[2]
 
 def p_arg_list(p):
     '''args : empty
@@ -172,15 +162,12 @@ def p_arg_list(p):
             | INT ID
             | INT ID COMMA INT ID
             '''
-    p[0] = None
 
 def p_external_declaration_declaration(p):
     'external_declaration : declaration'
-    p[0]=p[1]
 
 def p_declaration(p):   
     'declaration : init_declaration SEMI'
-    p[0]=p[1]
 
 def p_init_declaration(p):
     '''init_declaration : id_declaration
@@ -191,17 +178,14 @@ def p_init_declaration(p):
 
 def p_array_reference(p):
     'array_reference : LBRACKET NUMBER RBRACKET'
-    p[0] = p[2]
 
 def p_id_declaration(p):
     '''id_declaration : VOID ID
                       | INT ID
                       '''
-    p[0] = p[2]
 
 def p_external_declaration_semi(p):
     'external_declaration : SEMI'
-    p[0]=[]
 
 def p_statement(p):
     '''statement : compound_statement
@@ -210,7 +194,6 @@ def p_statement(p):
                  | loop_statement
                  | condition_statement
                  '''
-    p[0] = p[1]
 
 def p_jump_statement(p):
     '''jump_statement : BREAK SEMI
@@ -256,47 +239,56 @@ def p_statement_list(p):
 def p_expression(p):
     '''expression : conditional_expression
                   | unary_expression EQUALS expression
-                  | '''
-    if len(p) ==2:
-        p[0]=p[1]
-    else:
-        p[0] = p[1] = p[3]
+                  | STRING
+                  '''
 
 def p_function_call(p):
-    'function_call : ID LPAREN expression RPAREN'
+    'function_call : ID LPAREN expression_list RPAREN '
     global fcall_cnt
     fcall_cnt+=1
 
+def p_expression_list(p):
+    '''expression_list : expression
+                       | expression_list COMMA expression'''
+
 def p_unary_expressions(p):
     '''unary_expression : function_call
-                        | PP unary_expression
-                        | MM unary_expression
                         '''
-    p[0]=p[2]
+def p_ppmm(p):
+    '''expression : PP expression
+                  | MM expression
+                  | expression PP
+                  | expression MM'''
 
 def p_expression_plus(p):
-    'expression : expression PLUS term'
-    p[0] = p[1] + p[3]
+    'unary_expression : unary_expression PLUS term'
+
+def p_expression_and(p):
+    'unary_expression : AND term'
+
+def p_expression_id(p):
+    'term : ID'
+
+def p_exp_mul(p):
+    'unary_expression : unary_expression TIMES term'
+
+def p_expression_mod(p):
+    'unary_expression : unary_expression MOD term'
 
 def p_expression_minus(p):
-    'expression : expression MINUS term'
-    p[0] = p[1] - p[3]
+    'unary_expression : unary_expression MINUS term'
 
 def p_expression_term(p):
-    'expression : term'
-    p[0] = p[1]
+    'unary_expression : term'
 
 def p_term_factor(p):
     'term : factor'
-    p[0]  = p[1]
 
 def p_factor_num(p):
     'factor : NUMBER'
-    p[0] = p[1]
 
 def p_factor_expr(p):
     'factor : LPAREN expression RPAREN'
-    p[0] = p[2]
 def p_conditional_expr(p):
     '''conditional_expression : cast_expression
                               | expression LT term
@@ -304,7 +296,9 @@ def p_conditional_expr(p):
                               | expression GE term
                               | expression GT term
                               | expression EQ term
-                              | expression NE term '''
+                              | expression NE term 
+                              | expression LOR term
+                              '''
 def p_cast_expression(p):
     'cast_expression : unary_expression'
     
@@ -325,7 +319,7 @@ while True:
     except EOFError:
         break
     if not data : continue
-
+    parser.parse(data)
     print("#include : %d"%hd_cnt)
     print()
     print()
@@ -338,4 +332,11 @@ while True:
     print()
     print()
     print("Called Functions: %d"%fcall_cnt)
+    
+    hd_cnt = 0
+    fdef_cnt = 0
+    fcall_cnt=0
+    cond_cnt=0
+    loop_cnt=0
+    decvar_cnt=0
 
