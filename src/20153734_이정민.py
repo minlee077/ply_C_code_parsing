@@ -18,8 +18,8 @@ tokens = reserved+(
     #identifier
     'ID',
     #operators  
-    'PLUS','MINUS','TIMES','DIVIDE','MOD', # +, -, *, /, % 
-    'OR','AND','NOT','LOR','LAND', 'LNOT',# |, &, ~, ||, &&, !
+    'PLUS','MINUS','TIMES','MOD', # +, -, *, /, % 
+    'AND','LOR','LAND', 'LNOT',# |, &, ~, ||, &&, !
     'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', # <, <=, >, >=, ==, !=
     'PP','MM', #++, --
 
@@ -47,11 +47,8 @@ tokens = reserved+(
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
-t_DIVIDE = r'/'
 t_MOD = r'%'
-t_OR = r'\|'
 t_AND = r'&'
-t_NOT = r'~'
 t_LOR = r'\|\|'
 t_LAND = r'&&'
 t_LNOT = r'!'
@@ -108,12 +105,12 @@ lexer = lex.lex()
 precedence = (
         ('left','LOR'),
         ('left','LAND'),
-        ('left','OR'),
+        ('left','LNOT'),
         ('left','AND'),
         ('left','EQ','NE'),
         ('left','GT','GE','LT','LE'),
         ('left','PLUS','MINUS'),
-        ('left','TIMES','DIVIDE','MOD'),
+        ('left','TIMES','MOD'),
 )
 
 functions ={}
@@ -207,10 +204,10 @@ def p_loop_statement(p):
     global loop_cnt
     loop_cnt +=1
 
+
 def p_condition_statement(p):
-    '''condition_statement  :   IF LPAREN expression RPAREN statement ELSE statement
+    '''condition_statement  :   IF LPAREN expression RPAREN statement ELSE statement empty
                             |   IF LPAREN expression RPAREN statement
-                            |   IF LPAREN ID MOD ID EQ NUMBER RPAREN statement
                             |   IF LPAREN expression LOR expression RPAREN  statement ELSE statement
     '''
     global cond_cnt
@@ -242,11 +239,10 @@ def p_expression(p):
                   | unary_expression EQUALS expression
                   | STRING 
                   '''
-def p_lnot(p):
-    'temp : LNOT unary_expression'
 
-def p_temp(p):
-    'term : temp'
+def p_cdd(p):
+    'unary_expression : LNOT term'
+
 
 def p_function_call(p):
     '''function_call : ID LPAREN expression_list RPAREN 
@@ -281,8 +277,6 @@ def p_expression_id(p):
             | ID LBRACKET ID RBRACKET'''
 
 
-def p_expression_term(p):
-    'unary_expression : term'
 
 def p_term_factor(p):
     'term : factor'
@@ -292,27 +286,30 @@ def p_factor_num(p):
 
 def p_factor_expr(p):
     'factor : LPAREN expression RPAREN'
+
+
+
 def p_conditional_expr(p):
-    '''conditional_expression : cast_expression
-                              | unary_expression LT term
-                              | unary_expression LE term
-                              | unary_expression GE term
-                              | unary_expression GT term
-                              | unary_expression EQ term
-                              | unary_expression NE term 
-                              | unary_expression AND term 
-                              | unary_expression LAND term
-                              | unary_expression PLUS term
-                              | unary_expression TIMES term
-                              | unary_expression MOD term
-                              | unary_expression MINUS term
-                              '''
-def p_cast_expression(p):
-    'cast_expression : unary_expression'
-    
+    '''unary_expression : term
+                        | unary_expression LT term
+                        | unary_expression LE term
+                        | unary_expression GE term
+                        | unary_expression GT term
+                        | unary_expression EQ term
+                        | unary_expression NE term 
+                        | unary_expression AND term 
+                        | unary_expression LAND unary_expression
+                        | unary_expression PLUS term
+                        | unary_expression TIMES term
+                        | unary_expression MOD term
+                        | unary_expression MINUS term
+                        '''
+def p_conditional_e(p):
+    'conditional_expression : unary_expression'
 
 def p_error(p):
     print("Syntax error in input at %s" %p.value)
+
 
 import ply.yacc as yacc
 
