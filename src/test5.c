@@ -7,17 +7,16 @@ int top = 0;
 void queue_push() {
     int n;
     int i;
-    if (top < 5) {
+        if(top < 5){
         top++;
         for (i = top - 1; i > 0; i--) {
-            queue[i] = queue[i - 1];
         }
         printf("\ninput : ");
         scanf("%d", &n);
         queue[0] = n;
-    } else {
-        printf("Queue overflow!\n");
-    }
+        } else {
+            printf("strings!\n");
+        }
 }
 
 void queue_pop() {

@@ -37,7 +37,7 @@ tokens = reserved+(
     # #include 
     'INCLUDE',
 
-    # header
+    #*header
     'HEADER',
 
 )
@@ -74,7 +74,7 @@ t_RBRACKET = r'\]'
 t_COMMA = r','
 t_SEMI = r';'
 t_INCLUDE = r'\#include'
-t_HEADER = r'<([A-Za-z])+\.h>'
+t_HEADER = r'<([A-Za-z])+(\.h)*>'
 
 def t_NUMBER(t):
     r'\d+'
@@ -167,17 +167,15 @@ def p_external_declaration_declaration(p):
     'external_declaration : declaration'
 
 def p_declaration(p):   
-    'declaration : init_declaration SEMI'
+    '''declaration : init_declaration SEMI
+                   '''
 
 def p_init_declaration(p):
     '''init_declaration : id_declaration
-                        | id_declaration array_reference
+                        | id_declaration LBRACKET NUMBER RBRACKET
                         | id_declaration EQUALS expression'''
     global decvar_cnt
     decvar_cnt +=1
-
-def p_array_reference(p):
-    'array_reference : LBRACKET NUMBER RBRACKET'
 
 def p_id_declaration(p):
     '''id_declaration : VOID ID
@@ -210,11 +208,14 @@ def p_loop_statement(p):
     loop_cnt +=1
 
 def p_condition_statement(p):
-    '''condition_statement  :   IF LPAREN expression RPAREN statement
-                            |   IF LPAREN expression RPAREN statement ELSE statement
+    '''condition_statement  :   IF LPAREN expression RPAREN statement ELSE statement
+                            |   IF LPAREN expression RPAREN statement
+                            |   IF LPAREN ID MOD ID EQ NUMBER RPAREN statement
+                            |   IF LPAREN expression LOR expression RPAREN  statement ELSE statement
     '''
     global cond_cnt
     cond_cnt +=1
+
 
 def p_compound_statement(p):
     '''compound_statement : LBRACE declaration_list RBRACE
@@ -231,7 +232,7 @@ def p_declaration_list(p):
 def p_expression_statement(p):
     '''expression_statement : SEMI
                             | expression SEMI
-    '''
+                            '''
 def p_statement_list(p):
     '''statement_list : statement
                       | statement_list statement'''
@@ -239,11 +240,17 @@ def p_statement_list(p):
 def p_expression(p):
     '''expression : conditional_expression
                   | unary_expression EQUALS expression
-                  | STRING
+                  | STRING 
                   '''
+def p_lnot(p):
+    'temp : LNOT unary_expression'
+
+def p_temp(p):
+    'term : temp'
 
 def p_function_call(p):
-    'function_call : ID LPAREN expression_list RPAREN '
+    '''function_call : ID LPAREN expression_list RPAREN 
+                     | ID LPAREN RPAREN'''
     global fcall_cnt
     fcall_cnt+=1
 
@@ -255,28 +262,24 @@ def p_unary_expressions(p):
     '''unary_expression : function_call
                         '''
 def p_ppmm(p):
-    '''expression : PP expression
-                  | MM expression
-                  | expression PP
-                  | expression MM'''
+    '''expression : PP unary_expression
+                  | MM unary_expression
+                  | unary_expression PP
+                  | unary_expression MM
+                  '''
 
-def p_expression_plus(p):
-    'unary_expression : unary_expression PLUS term'
+
+#def p_expression_plus(p):
 
 def p_expression_and(p):
-    'unary_expression : AND term'
+    '''unary_expression : AND term
+                        '''
 
 def p_expression_id(p):
-    'term : ID'
+    '''term : ID
+            | ID LBRACKET NUMBER RBRACKET
+            | ID LBRACKET ID RBRACKET'''
 
-def p_exp_mul(p):
-    'unary_expression : unary_expression TIMES term'
-
-def p_expression_mod(p):
-    'unary_expression : unary_expression MOD term'
-
-def p_expression_minus(p):
-    'unary_expression : unary_expression MINUS term'
 
 def p_expression_term(p):
     'unary_expression : term'
@@ -291,13 +294,18 @@ def p_factor_expr(p):
     'factor : LPAREN expression RPAREN'
 def p_conditional_expr(p):
     '''conditional_expression : cast_expression
-                              | expression LT term
-                              | expression LE term
-                              | expression GE term
-                              | expression GT term
-                              | expression EQ term
-                              | expression NE term 
-                              | expression LOR term
+                              | unary_expression LT term
+                              | unary_expression LE term
+                              | unary_expression GE term
+                              | unary_expression GT term
+                              | unary_expression EQ term
+                              | unary_expression NE term 
+                              | unary_expression AND term 
+                              | unary_expression LAND term
+                              | unary_expression PLUS term
+                              | unary_expression TIMES term
+                              | unary_expression MOD term
+                              | unary_expression MINUS term
                               '''
 def p_cast_expression(p):
     'cast_expression : unary_expression'
