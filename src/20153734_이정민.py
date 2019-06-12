@@ -206,8 +206,7 @@ def p_loop_statement(p):
 
 
 def p_condition_statement(p):
-    '''condition_statement  :   IF LPAREN expression RPAREN statement ELSE statement empty
-                            |   IF LPAREN expression RPAREN statement
+    '''condition_statement  :   IF LPAREN expression RPAREN statement
                             |   IF LPAREN expression LOR expression RPAREN  statement ELSE statement
     '''
     global cond_cnt
@@ -234,13 +233,17 @@ def p_statement_list(p):
     '''statement_list : statement
                       | statement_list statement'''
 
+def p_else(p):
+    'condition_statement : ELSE statement'
+
+
 def p_expression(p):
     '''expression : conditional_expression
                   | unary_expression EQUALS expression
                   | STRING 
                   '''
 
-def p_cdd(p):
+def p_lnot(p):
     'unary_expression : LNOT term'
 
 
@@ -249,6 +252,7 @@ def p_function_call(p):
                      | ID LPAREN RPAREN'''
     global fcall_cnt
     fcall_cnt+=1
+
 
 def p_expression_list(p):
     '''expression_list : expression
